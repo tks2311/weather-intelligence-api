@@ -51,9 +51,7 @@ async def root():
     }
 
 @app.get("/weather/current", response_model=WeatherResponse)
-@limiter.limit("100/minute")
 async def get_current_weather(
-    request: Request,
     city: str,
     country: Optional[str] = None,
     lat: Optional[float] = None,
@@ -124,9 +122,7 @@ async def get_current_weather(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @app.get("/weather/forecast")
-@limiter.limit("50/minute")
 async def get_weather_forecast(
-    request: Request,
     city: str,
     country: Optional[str] = None,
     lat: Optional[float] = None,
@@ -201,9 +197,7 @@ async def get_weather_forecast(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @app.get("/weather/analytics", response_model=WeatherAnalyticsResponse)
-@limiter.limit("20/minute")
 async def get_weather_analytics(
-    request: Request,
     city: str,
     country: Optional[str] = None,
     lat: Optional[float] = None,
@@ -214,7 +208,7 @@ async def get_weather_analytics(
 ):
     verify_api_key(credentials.credentials)
     
-    current_weather = await get_current_weather(request, city, country, lat, lon, units, credentials)
+    current_weather = await get_current_weather(city, country, lat, lon, units, credentials)
     
     analytics = {
         "location": current_weather["location"],
