@@ -11,8 +11,15 @@ from typing import Optional, Dict, Any
 import os
 
 from .models import WeatherResponse, WeatherQuery, HistoricalWeatherQuery, WeatherAnalyticsResponse
-from .auth import verify_api_key
+from .auth import verify_api_key, get_api_key_info
 from .config import settings
+from .webhooks import (
+    WebhookConfig, WebhookPayload, create_webhook, get_webhooks, 
+    delete_webhook, check_and_trigger_webhooks
+)
+from .batch import BatchWeatherRequest, BatchWeatherResponse, process_batch_request
+from .historical import HistoricalRequest, HistoricalResponse, fetch_historical_weather
+from .cache import weather_cache, cache_key_for_weather
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
@@ -45,10 +52,19 @@ async def root():
         "documentation": "/docs",
         "endpoints": {
             "current_weather": "/weather/current",
-            "forecast": "/weather/forecast",
+            "forecast": "/weather/forecast", 
             "historical": "/weather/historical",
-            "analytics": "/weather/analytics"
-        }
+            "analytics": "/weather/analytics",
+            "batch_processing": "/weather/batch",
+            "webhooks": "/webhooks"
+        },
+        "advanced_features": [
+            "Real-time webhook notifications",
+            "Batch processing up to 50 locations",
+            "Historical weather data with AI trends",
+            "Business intelligence insights",
+            "Concurrent request processing"
+        ]
     }
 
 @app.get("/health")
@@ -66,6 +82,12 @@ async def get_current_weather(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     verify_api_key(credentials.credentials)
+    
+    # Check cache first
+    cache_params = cache_key_for_weather(city, country, lat, lon, units)
+    cached_data = weather_cache.get("current_weather", cache_params)
+    if cached_data:
+        return cached_data
     
     try:
         async with httpx.AsyncClient() as client:
@@ -119,6 +141,12 @@ async def get_current_weather(
                 "timestamp": datetime.utcnow().isoformat(),
                 "units": units
             }
+            
+            # Cache the result
+            weather_cache.set("current_weather", cache_params, enhanced_data)
+            
+            # Check for webhook triggers
+            await check_and_trigger_webhooks(enhanced_data, credentials.credentials)
             
             return enhanced_data
             
@@ -416,6 +444,130 @@ def _generate_business_recommendations(weather: Dict[str, Any]) -> list:
         ])
     
     return recommendations
+
+# Webhook Management Endpoints
+@app.post("/webhooks")
+async def create_webhook_subscription(
+    webhook: WebhookConfig,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Create a new webhook subscription for weather alerts"""
+    verify_api_key(credentials.credentials)
+    
+    webhook_id = create_webhook(webhook, credentials.credentials)
+    
+    return {
+        "webhook_id": webhook_id,
+        "message": "Webhook created successfully",
+        "webhook": webhook.dict()
+    }
+
+@app.get("/webhooks")
+async def list_webhooks(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """List all webhook subscriptions for the API key"""
+    verify_api_key(credentials.credentials)
+    
+    webhooks = get_webhooks(credentials.credentials)
+    
+    return {
+        "webhooks": [webhook.dict() for webhook in webhooks],
+        "count": len(webhooks)
+    }
+
+@app.delete("/webhooks/{webhook_id}")
+async def delete_webhook_subscription(
+    webhook_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Delete a webhook subscription"""
+    verify_api_key(credentials.credentials)
+    
+    success = delete_webhook(webhook_id, credentials.credentials)
+    
+    if success:
+        return {"message": "Webhook deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+# Batch Processing Endpoint
+@app.post("/weather/batch", response_model=BatchWeatherResponse)
+async def batch_weather_request(
+    batch_request: BatchWeatherRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Process multiple weather requests concurrently for maximum efficiency"""
+    verify_api_key(credentials.credentials)
+    
+    if len(batch_request.locations) > 50:
+        raise HTTPException(status_code=400, detail="Maximum 50 locations per batch request")
+    
+    if len(batch_request.endpoints) > 3:
+        raise HTTPException(status_code=400, detail="Maximum 3 endpoints per batch request")
+    
+    valid_endpoints = ["current", "forecast"]
+    for endpoint in batch_request.endpoints:
+        if endpoint not in valid_endpoints:
+            raise HTTPException(status_code=400, detail=f"Invalid endpoint: {endpoint}. Valid endpoints: {valid_endpoints}")
+    
+    try:
+        result = await process_batch_request(batch_request)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Batch processing failed: {str(e)}")
+
+# Historical Weather Data Endpoint
+@app.post("/weather/historical", response_model=HistoricalResponse)
+async def get_historical_weather(
+    historical_request: HistoricalRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Get historical weather data with AI-powered trend analysis"""
+    verify_api_key(credentials.credentials)
+    
+    try:
+        # Validate date format and range
+        from datetime import datetime
+        start_date = datetime.strptime(historical_request.start_date, "%Y-%m-%d")
+        end_date = datetime.strptime(historical_request.end_date, "%Y-%m-%d")
+        
+        if start_date > end_date:
+            raise HTTPException(status_code=400, detail="Start date must be before end date")
+        
+        if (end_date - start_date).days > 365:
+            raise HTTPException(status_code=400, detail="Maximum historical period is 365 days")
+        
+        if end_date > datetime.now():
+            raise HTTPException(status_code=400, detail="End date cannot be in the future")
+        
+        result = await fetch_historical_weather(historical_request)
+        return result
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date format. Use YYYY-MM-DD: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Historical data fetch failed: {str(e)}")
+
+# Cache Management Endpoint
+@app.get("/cache/stats")
+async def get_cache_stats(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Get cache performance statistics"""
+    verify_api_key(credentials.credentials)
+    
+    stats = weather_cache.get_stats()
+    cleared_count = weather_cache.clear_expired()
+    
+    return {
+        "cache_statistics": stats,
+        "expired_entries_cleared": cleared_count,
+        "cache_efficiency": {
+            "hit_rate": round(stats["total_hits"] / max(1, stats["total_entries"]), 2),
+            "recommended_ttl": "5 minutes for optimal performance"
+        }
+    }
 
 if __name__ == "__main__":
     import uvicorn
