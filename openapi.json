@@ -1,0 +1,699 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Weather Intelligence API",
+    "description": "Advanced weather data and analytics API with AI-powered insights",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/weather/current": {
+      "get": {
+        "summary": "Get Current Weather",
+        "operationId": "get_current_weather_weather_current_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Request"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "City"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Country"
+            }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lat"
+            }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lon"
+            }
+          },
+          {
+            "name": "units",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "metric",
+              "title": "Units"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/weather/forecast": {
+      "get": {
+        "summary": "Get Weather Forecast",
+        "operationId": "get_weather_forecast_weather_forecast_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Request"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 5,
+              "title": "Days"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "City"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Country"
+            }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lat"
+            }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lon"
+            }
+          },
+          {
+            "name": "units",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "metric",
+              "title": "Units"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/weather/analytics": {
+      "get": {
+        "summary": "Get Weather Analytics",
+        "operationId": "get_weather_analytics_weather_analytics_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Request"
+            }
+          },
+          {
+            "name": "days_back",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 30,
+              "title": "Days Back"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "City"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Country"
+            }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lat"
+            }
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lon"
+            }
+          },
+          {
+            "name": "units",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "metric",
+              "title": "Units"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherAnalyticsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AIInsights": {
+        "properties": {
+          "comfort_level": {
+            "type": "string",
+            "title": "Comfort Level"
+          },
+          "activity_recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Activity Recommendations"
+          },
+          "weather_score": {
+            "type": "integer",
+            "title": "Weather Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "comfort_level",
+          "activity_recommendations",
+          "weather_score"
+        ],
+        "title": "AIInsights"
+      },
+      "BusinessInsights": {
+        "properties": {
+          "retail_impact": {
+            "type": "object",
+            "title": "Retail Impact"
+          },
+          "agriculture_conditions": {
+            "type": "object",
+            "title": "Agriculture Conditions"
+          },
+          "outdoor_events_suitability": {
+            "type": "object",
+            "title": "Outdoor Events Suitability"
+          },
+          "energy_demand_forecast": {
+            "type": "object",
+            "title": "Energy Demand Forecast"
+          }
+        },
+        "type": "object",
+        "required": [
+          "retail_impact",
+          "agriculture_conditions",
+          "outdoor_events_suitability",
+          "energy_demand_forecast"
+        ],
+        "title": "BusinessInsights"
+      },
+      "CurrentWeather": {
+        "properties": {
+          "temperature": {
+            "type": "number",
+            "title": "Temperature"
+          },
+          "feels_like": {
+            "type": "number",
+            "title": "Feels Like"
+          },
+          "humidity": {
+            "type": "integer",
+            "title": "Humidity"
+          },
+          "pressure": {
+            "type": "integer",
+            "title": "Pressure"
+          },
+          "visibility": {
+            "type": "number",
+            "title": "Visibility"
+          },
+          "uv_index": {
+            "type": "number",
+            "title": "Uv Index"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "icon": {
+            "type": "string",
+            "title": "Icon"
+          },
+          "wind": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Wind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "temperature",
+          "feels_like",
+          "humidity",
+          "pressure",
+          "visibility",
+          "uv_index",
+          "description",
+          "icon",
+          "wind"
+        ],
+        "title": "CurrentWeather"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Location": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "coordinates": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Coordinates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "city",
+          "country",
+          "coordinates"
+        ],
+        "title": "Location"
+      },
+      "Trends": {
+        "properties": {
+          "temperature_trend": {
+            "type": "string",
+            "title": "Temperature Trend"
+          },
+          "humidity_trend": {
+            "type": "string",
+            "title": "Humidity Trend"
+          },
+          "pressure_trend": {
+            "type": "string",
+            "title": "Pressure Trend"
+          }
+        },
+        "type": "object",
+        "required": [
+          "temperature_trend",
+          "humidity_trend",
+          "pressure_trend"
+        ],
+        "title": "Trends"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WeatherAnalyticsResponse": {
+        "properties": {
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "analysis_period": {
+            "type": "string",
+            "title": "Analysis Period"
+          },
+          "business_insights": {
+            "$ref": "#/components/schemas/BusinessInsights"
+          },
+          "trends": {
+            "$ref": "#/components/schemas/Trends"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recommendations"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "location",
+          "analysis_period",
+          "business_insights",
+          "trends",
+          "recommendations",
+          "timestamp"
+        ],
+        "title": "WeatherAnalyticsResponse"
+      },
+      "WeatherResponse": {
+        "properties": {
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "current": {
+            "$ref": "#/components/schemas/CurrentWeather"
+          },
+          "ai_insights": {
+            "$ref": "#/components/schemas/AIInsights"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "units": {
+            "type": "string",
+            "title": "Units"
+          }
+        },
+        "type": "object",
+        "required": [
+          "location",
+          "current",
+          "ai_insights",
+          "timestamp",
+          "units"
+        ],
+        "title": "WeatherResponse"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
