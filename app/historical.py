@@ -159,6 +159,14 @@ def analyze_weather_patterns(data: List[HistoricalWeatherData]) -> Dict[str, Any
     for i in range(1, len(data)):
         temp_changes.append(data[i].temperature["avg"] - data[i-1].temperature["avg"])
     
+    if not temp_changes:
+        # Single day of data
+        return {
+            "volatility": "minimal",
+            "dominant_conditions": data[0].description if data else "unknown",
+            "temperature_stability": "stable"
+        }
+    
     return {
         "volatility": "high" if max(temp_changes) - min(temp_changes) > 10 else "moderate",
         "dominant_conditions": max(set([d.description for d in data]), key=[d.description for d in data].count),
