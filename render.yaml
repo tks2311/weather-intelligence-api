@@ -4,10 +4,9 @@ services:
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: free
     envVars:
       - key: OPENWEATHER_API_KEY
         sync: false
       - key: SECRET_KEY
         generateValue: true
-      - key: REDIS_URL
-        value: redis://localhost:6379

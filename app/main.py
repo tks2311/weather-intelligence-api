@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -53,8 +53,12 @@ async def root():
 @app.get("/weather/current", response_model=WeatherResponse)
 @limiter.limit("100/minute")
 async def get_current_weather(
-    request,
-    query: WeatherQuery = Depends(),
+    request: Request,
+    city: str,
+    country: Optional[str] = None,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
+    units: Optional[str] = "metric",
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     verify_api_key(credentials.credentials)
@@ -62,18 +66,18 @@ async def get_current_weather(
     try:
         async with httpx.AsyncClient() as client:
             weather_url = f"http://api.openweathermap.org/data/2.5/weather"
-            params = {
-                "q": f"{query.city},{query.country}" if query.country else query.city,
-                "appid": settings.OPENWEATHER_API_KEY,
-                "units": query.units or "metric"
-            }
-            
-            if query.lat and query.lon:
+            if lat and lon:
                 params = {
-                    "lat": query.lat,
-                    "lon": query.lon,
+                    "lat": lat,
+                    "lon": lon,
                     "appid": settings.OPENWEATHER_API_KEY,
-                    "units": query.units or "metric"
+                    "units": units
+                }
+            else:
+                params = {
+                    "q": f"{city},{country}" if country else city,
+                    "appid": settings.OPENWEATHER_API_KEY,
+                    "units": units
                 }
             
             response = await client.get(weather_url, params=params)
@@ -109,7 +113,7 @@ async def get_current_weather(
                     "weather_score": _calculate_weather_score(data)
                 },
                 "timestamp": datetime.utcnow().isoformat(),
-                "units": query.units or "metric"
+                "units": units
             }
             
             return enhanced_data
@@ -122,8 +126,12 @@ async def get_current_weather(
 @app.get("/weather/forecast")
 @limiter.limit("50/minute")
 async def get_weather_forecast(
-    request,
-    query: WeatherQuery = Depends(),
+    request: Request,
+    city: str,
+    country: Optional[str] = None,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
+    units: Optional[str] = "metric",
     days: int = 5,
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
@@ -132,19 +140,19 @@ async def get_weather_forecast(
     try:
         async with httpx.AsyncClient() as client:
             forecast_url = f"http://api.openweathermap.org/data/2.5/forecast"
-            params = {
-                "q": f"{query.city},{query.country}" if query.country else query.city,
-                "appid": settings.OPENWEATHER_API_KEY,
-                "units": query.units or "metric",
-                "cnt": days * 8
-            }
-            
-            if query.lat and query.lon:
+            if lat and lon:
                 params = {
-                    "lat": query.lat,
-                    "lon": query.lon,
+                    "lat": lat,
+                    "lon": lon,
                     "appid": settings.OPENWEATHER_API_KEY,
-                    "units": query.units or "metric",
+                    "units": units,
+                    "cnt": days * 8
+                }
+            else:
+                params = {
+                    "q": f"{city},{country}" if country else city,
+                    "appid": settings.OPENWEATHER_API_KEY,
+                    "units": units,
                     "cnt": days * 8
                 }
             
@@ -195,14 +203,18 @@ async def get_weather_forecast(
 @app.get("/weather/analytics", response_model=WeatherAnalyticsResponse)
 @limiter.limit("20/minute")
 async def get_weather_analytics(
-    request,
-    query: WeatherQuery = Depends(),
+    request: Request,
+    city: str,
+    country: Optional[str] = None,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
+    units: Optional[str] = "metric",
     days_back: int = 30,
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     verify_api_key(credentials.credentials)
     
-    current_weather = await get_current_weather(request, query, credentials)
+    current_weather = await get_current_weather(request, city, country, lat, lon, units, credentials)
     
     analytics = {
         "location": current_weather["location"],

@@ -8,7 +8,14 @@
       "Bash(./venv/bin/python:*)",
       "Bash(ls:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "WebFetch(domain:openweathermap.org)",
+      "Bash(chmod:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }
