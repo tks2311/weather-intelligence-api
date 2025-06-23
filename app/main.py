@@ -37,6 +37,7 @@ app.add_middleware(
 security = HTTPBearer()
 
 @app.get("/")
+@app.head("/")
 async def root():
     return {
         "message": "Weather Intelligence API",
@@ -49,6 +50,11 @@ async def root():
             "analytics": "/weather/analytics"
         }
     }
+
+@app.get("/health")
+@app.head("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 @app.get("/weather/current", response_model=WeatherResponse)
 async def get_current_weather(
