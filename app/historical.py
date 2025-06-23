@@ -25,7 +25,7 @@ class HistoricalWeatherData(BaseModel):
 
 class HistoricalResponse(BaseModel):
     location: Dict[str, Any]
-    period: Dict[str, str]
+    period: Dict[str, Any]
     historical_data: List[HistoricalWeatherData]
     statistics: Dict[str, Any]
     ai_trends: Dict[str, Any]
