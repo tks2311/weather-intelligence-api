@@ -15,7 +15,8 @@
       "Bash(chmod:*)",
       "Bash(git remote add:*)",
       "Bash(git push:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
